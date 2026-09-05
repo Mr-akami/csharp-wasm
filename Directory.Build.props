@@ -1,0 +1,33 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>13.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningLevel>9999</WarningLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+    <!-- The compiler must behave identically on every developer machine and in CI:
+         culture-sensitive formatting or comparison would leak into diagnostics and
+         into generated MoonBit identifiers. -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+
+    <!-- cswasm itself is expected to be AOT-friendly; keeping the analyzers on from
+         day one stops reflection creeping into the driver. -->
+    <IsAotCompatible>true</IsAotCompatible>
+
+    <DeterministicSourcePaths Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</DeterministicSourcePaths>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Product>CsWasm</Product>
+    <Company>csharp-wasm</Company>
+    <VersionPrefix>0.0.1</VersionPrefix>
+    <RepositoryUrl>https://github.com/Mr-akami/csharp-wasm</RepositoryUrl>
+  </PropertyGroup>
+
+</Project>

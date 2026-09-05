@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CsWasm</RootNamespace>
+    <AssemblyName>CsWasm.Common</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The toolchain pin travels with the binary: a shipped cswasm must know which
+         MoonBit it was built against, without depending on the repo layout. -->
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)../../tools/toolchain.json"
+                      LogicalName="CsWasm.toolchain.json" />
+  </ItemGroup>
+
+</Project>

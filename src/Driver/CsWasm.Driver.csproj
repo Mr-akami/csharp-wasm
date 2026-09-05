@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>CsWasm.Driver</RootNamespace>
+    <AssemblyName>cswasm</AssemblyName>
+    <RollForward>Major</RollForward>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Common/CsWasm.Common.csproj" />
+    <ProjectReference Include="../Backend.MoonBit/CsWasm.Backend.MoonBit.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="CsWasm.Tests" />
+  </ItemGroup>
+
+</Project>

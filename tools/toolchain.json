@@ -1,0 +1,33 @@
+{
+  "$comment": "Single source of truth for pinned toolchain versions. flake.nix reads this file; CI and the cswasm driver verify against it. Changing a pin is a reviewed baseline change, never a silent upgrade (see docs/adr/ and Step 5 benchmark policy).",
+  "moonbit": {
+    "version": "0.10.11+6ff76a5f9",
+    "moonVersion": "0.1.20260827",
+    "moonrunVersion": "0.1.20260827",
+    "pinnedOn": "2026-09-05",
+    "core": {
+      "url": "https://cli.moonbitlang.com/cores/core-0.10.11%2B6ff76a5f9.tar.gz",
+      "sha256": "sha256-ZhQl35u4/3yxSX3Tyyioc7Wkdvs7B8WHoiVFP/0KqbQ="
+    },
+    "binaries": {
+      "x86_64-linux": {
+        "url": "https://cli.moonbitlang.com/binaries/0.10.11%2B6ff76a5f9/moonbit-linux-x86_64.tar.gz",
+        "sha256": "sha256-lXP031b/f+maogDd6rw3mRnoAgPDeYZkLY50rdGn574="
+      },
+      "aarch64-darwin": {
+        "url": "https://cli.moonbitlang.com/binaries/0.10.11%2B6ff76a5f9/moonbit-darwin-aarch64.tar.gz",
+        "sha256": "sha256-n2F8mueLCOGTVOcKQgPCFX/1Nzx4w0CuvnIog0Qa5bU="
+      }
+    }
+  },
+  "dotnet": {
+    "sdk": "9.0.317",
+    "channel": "9.0"
+  },
+  "node": {
+    "version": "24.19.0"
+  },
+  "wasmTools": {
+    "version": "1.258.0"
+  }
+}
