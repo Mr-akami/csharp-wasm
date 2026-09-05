@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CsWasm.Backend.MoonBit</RootNamespace>
+    <AssemblyName>CsWasm.Backend.MoonBit</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Common/CsWasm.Common.csproj" />
+  </ItemGroup>
+
+</Project>

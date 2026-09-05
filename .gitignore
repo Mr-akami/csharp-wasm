@@ -1,0 +1,20 @@
+# .NET
+bin/
+obj/
+*.user
+artifacts/
+
+# Nix / direnv
+result
+result-*
+.direnv/
+
+# Writable copy of the pinned MoonBit toolchain, materialised by the dev shell
+.moon-home/
+
+# MoonBit build output
+_build/
+target/
+
+# Local scratch
+.cswasm-cache/

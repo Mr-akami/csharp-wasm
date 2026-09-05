@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>CsWasm.Tests</RootNamespace>
+    <AssemblyName>CsWasm.Tests</AssemblyName>
+    <!-- xunit's generated entry point trips the AOT analyzer; the compiler under test
+         is what has to stay AOT-clean, not the test host. -->
+    <IsAotCompatible>false</IsAotCompatible>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Common/CsWasm.Common.csproj" />
+    <ProjectReference Include="../../src/Backend.MoonBit/CsWasm.Backend.MoonBit.csproj" />
+    <ProjectReference Include="../../src/Driver/CsWasm.Driver.csproj" />
+  </ItemGroup>
+
+</Project>

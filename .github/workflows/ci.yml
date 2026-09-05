@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build and test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v16
+
+      - name: Cache the Nix store
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      # Fails loudly if nixpkgs has moved any pinned tool, or if the MoonBit
+      # archives no longer hash to what tools/toolchain.json records.
+      - name: Check toolchain pins
+        run: nix flake check --print-build-logs
+
+      - name: Build
+        run: nix develop --command dotnet build --configuration Release
+        env:
+          ContinuousIntegrationBuild: "true"
+
+      - name: Test
+        run: nix develop --command dotnet test --configuration Release --no-build --logger "console;verbosity=normal"
+
+      - name: cswasm --version
+        run: nix develop --command dotnet run --project src/Driver --configuration Release --no-build -- --version
+
+      - name: cswasm toolchain
+        run: nix develop --command dotnet run --project src/Driver --configuration Release --no-build -- toolchain
+
+      # Proves the pinned MoonBit can actually produce and validate a WasmGC module,
+      # which is the whole reason the backend exists.
+      - name: MoonBit wasm-gc smoke
+        run: nix develop --command tools/moonbit-smoke.sh
