@@ -29,6 +29,8 @@ The band is the leading digit, so `DiagnosticCode.Category` is derived, never st
 | `CSW1002` | error    | A metadata construct is outside the subset the frontend models   |
 | `CSW1003` | error    | A local has its address taken and cannot become an SSA value     |
 | `CSW1004` | error    | A method body cannot be normalised into SSA                      |
+| `CSW1005` | warning  | Implicit exception checks are not inserted for a method          |
+| `CSW4001` | error    | An SSA construct the MoonBit backend cannot lower                |
 | `CSW5001` | error    | A required MoonBit executable was not found                     |
 | `CSW5002` | error    | A MoonBit executable does not match `tools/toolchain.json`      |
 | `CSW5003` | error    | A toolchain executable could not be run while being probed      |

@@ -7,6 +7,9 @@
 
   <ItemGroup>
     <ProjectReference Include="../Common/CsWasm.Common.csproj" />
+    <!-- The emitter walks the SSA the CIL frontend produces. The dependency runs one way:
+         nothing in Frontend.Cil knows this project exists (docs/architecture.md section 4.2). -->
+    <ProjectReference Include="../Frontend.Cil/CsWasm.Frontend.Cil.csproj" />
   </ItemGroup>
 
 </Project>

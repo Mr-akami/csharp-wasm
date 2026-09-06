@@ -17,6 +17,9 @@ namespace CsWasm.Frontend.Cil;
 /// <summary>A method token read as data: who owns it, what it is called and what it takes.</summary>
 internal sealed record MethodTokenInfo(string OwnerName, string Name, MethodSignature<string> Signature);
 
+/// <summary>A field token read as data: who owns it, what it is called and what it holds.</summary>
+internal sealed record FieldTokenInfo(string OwnerName, string Name, string TypeName);
+
 internal sealed class CilSignatureFormatter : ISignatureTypeProvider<string, object?>
 {
     private readonly List<string> unsupported = [];
@@ -187,21 +190,35 @@ internal sealed class CilSignatureFormatter : ISignatureTypeProvider<string, obj
     }
 
     /// <summary>
-    /// The declared type of a field token, or null for a handle that names no field.
+    /// The owner, the name and the declared type of a field token, or null for a handle that
+    /// names no field. This is the same token <see cref="MemberName"/> renders, read as data
+    /// so that a consumer never has to recover a field name from the rendered text.
     /// </summary>
-    public string? FieldTypeName(MetadataReader reader, EntityHandle handle)
+    public FieldTokenInfo? FieldToken(MetadataReader reader, EntityHandle handle)
     {
         switch (handle.Kind)
         {
             case HandleKind.FieldDefinition:
-                return reader.GetFieldDefinition((FieldDefinitionHandle)handle).DecodeSignature(this, null);
+            {
+                var field = reader.GetFieldDefinition((FieldDefinitionHandle)handle);
+                return new FieldTokenInfo(
+                    DefinitionName(reader, field.GetDeclaringType()),
+                    reader.GetString(field.Name),
+                    field.DecodeSignature(this, null));
+            }
 
             case HandleKind.MemberReference:
             {
                 var member = reader.GetMemberReference((MemberReferenceHandle)handle);
-                return member.GetKind() == MemberReferenceKind.Field
-                    ? member.DecodeFieldSignature(this, null)
-                    : null;
+                if (member.GetKind() != MemberReferenceKind.Field)
+                {
+                    return null;
+                }
+
+                return new FieldTokenInfo(
+                    TypeName(reader, member.Parent),
+                    reader.GetString(member.Name),
+                    member.DecodeFieldSignature(this, null));
             }
 
             default:

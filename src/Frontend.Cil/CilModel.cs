@@ -51,6 +51,7 @@ public sealed record LocalModel(int Index, string TypeName);
 /// and <c>ldc.i4.1</c> reports 1.
 /// </param>
 /// <param name="CallOperand">The called method, for the opcodes that take a method token.</param>
+/// <param name="FieldOperand">The named field, for the opcodes that take a field token.</param>
 /// <param name="TypeOperand">
 /// The type the operand token implies, in the same spelling <see cref="FieldModel.TypeName"/>
 /// and <see cref="MethodModel.ReturnTypeName"/> use, or null when the opcode names no type:
@@ -63,18 +64,36 @@ public sealed record IlInstruction(
     string? Operand,
     int? IntOperand = null,
     IlCallOperand? CallOperand = null,
-    string? TypeOperand = null);
+    string? TypeOperand = null,
+    IlFieldOperand? FieldOperand = null);
+
+/// <summary>
+/// The named field of a field token, as data rather than as display text.
+/// </summary>
+/// <param name="OwnerName">The fully qualified name of the type that declares the field.</param>
+/// <param name="Name">The field's own name, as the metadata spells it.</param>
+public sealed record IlFieldOperand(string OwnerName, string Name);
 
 /// <summary>
 /// The called method of a method token, as data rather than as display text.
 /// </summary>
-/// <param name="MemberName">The owner and name of the method, as <c>Owner::Name</c>.</param>
+/// <param name="OwnerName">The fully qualified name of the type that declares the method.</param>
+/// <param name="Name">The method's own name, as the metadata spells it.</param>
 /// <param name="ArgumentCount">
 /// The number of declared parameters, which does not include the instance itself. The number
 /// of stack slots a <c>call</c> pops is this plus one when <paramref name="HasThis"/> holds;
 /// <c>newobj</c> allocates the instance instead of popping it and pops only the parameters.
 /// </param>
-public sealed record IlCallOperand(string MemberName, int ArgumentCount, bool HasThis, bool ReturnsVoid);
+public sealed record IlCallOperand(
+    string OwnerName,
+    string Name,
+    int ArgumentCount,
+    bool HasThis,
+    bool ReturnsVoid)
+{
+    /// <summary>The owner and the name joined the way ILAsm writes them, as <c>Owner::Name</c>.</summary>
+    public string MemberName => OwnerName + "::" + Name;
+}
 
 public enum ExceptionRegionKind
 {

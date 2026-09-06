@@ -52,7 +52,14 @@ public static class SpikeSsaBuilder
                 }
             }
 
-            types.Add(new SpikeSsaTypeDefinition(type.FullName, methods));
+            // A field whose type is outside the family is recorded with no type rather than
+            // refused: issue #15 decides which bodies normalise, and a type declaration that
+            // no normalised body reads is not a body.
+            var fields = type.Fields
+                .Select(field => new SpikeSsaField(field.Name, SpikeSsaTypes.Map(field.TypeName)))
+                .ToList();
+
+            types.Add(new SpikeSsaTypeDefinition(type.FullName, fields, methods));
         }
 
         ssa = new SpikeSsaAssembly(assembly.Name, types);

@@ -1,3 +1,4 @@
+using CsWasm.Backend.MoonBit.Emitter;
 using CsWasm.Diagnostics;
 using CsWasm.Frontend.Cil;
 using CsWasm.Frontend.Cil.Ssa;
@@ -51,6 +52,49 @@ internal static class DumpCommand
         }
 
         return Report(diagnostics, stderr);
+    }
+
+    /// <summary>
+    /// Prints the MoonBit the backend generates for the assembly.
+    /// </summary>
+    /// <remarks>
+    /// One list, one decision: the run fails if it holds an error, and the exit code, whether
+    /// stdout is written and what reaches stderr all follow from that one answer. CSW1005 is a
+    /// warning, so a run that only reports it still prints its source - the deviation it names
+    /// is in the source, not instead of it.
+    /// </remarks>
+    public static int MoonBit(string path, TextWriter stdout, TextWriter stderr)
+    {
+        var diagnostics = new List<Diagnostic>();
+        var assembly = Read(path, diagnostics);
+        string? source = null;
+
+        if (assembly is not null)
+        {
+            diagnostics.AddRange(SpikeSsaBuilder.Build(assembly, out var ssa));
+
+            // The backend runs only over a model that is whole: lowering part of an assembly
+            // would report failures of the part the frontend already refused.
+            if (diagnostics.Count == 0)
+            {
+                diagnostics.AddRange(MoonBitEmitter.Emit(ssa, out source));
+            }
+        }
+
+        var failed = diagnostics.Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
+
+        foreach (var diagnostic in diagnostics)
+        {
+            stderr.WriteLine(diagnostic.Format());
+        }
+
+        if (failed || source is null)
+        {
+            return CommandLine.ExitFailure;
+        }
+
+        stdout.Write(source);
+        return CommandLine.ExitSuccess;
     }
 
     /// <summary>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CsWasm.Samples.Poc</RootNamespace>
+    <AssemblyName>CsWasm.Samples.NamingStability</AssemblyName>
+    <IsPackable>false</IsPackable>
+
+    <!-- Input data for the CIL frontend, not code cswasm runs. Same build settings as
+         CsWasm.Samples.Poc so that the only differences between the two assemblies are the
+         ones this sample exists to vary. -->
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+    <Nullable>disable</Nullable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <IsAotCompatible>false</IsAotCompatible>
+  </PropertyGroup>
+
+</Project>

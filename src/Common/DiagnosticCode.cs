@@ -43,6 +43,17 @@ public readonly record struct DiagnosticCode(int Number)
     /// </summary>
     public static DiagnosticCode BodyNotNormalizable => new(1004);
 
+    /// <summary>
+    /// A method contains an operation whose C# semantics include an implicit exception - a
+    /// null reference, an array bound, a division by zero - and the generated code carries no
+    /// check for it. A warning, not an error: the code is generated, and it departs from C#.
+    /// </summary>
+    public static DiagnosticCode ImplicitExceptionChecksNotInserted => new(1005);
+
+    // CSW4xxx - MoonBit backend mapping.
+    /// <summary>An SSA construct the MoonBit backend of this step cannot lower.</summary>
+    public static DiagnosticCode BackendCannotLower => new(4001);
+
     // CSW5xxx - toolchain.
     /// <summary>A required MoonBit executable was not found on PATH or under MOON_HOME.</summary>
     public static DiagnosticCode ToolchainNotFound => new(5001);

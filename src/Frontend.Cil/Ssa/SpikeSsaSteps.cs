@@ -36,7 +36,8 @@ internal sealed record Step(
     string? Detail = null,
     int PopCount = 0,
     SpikeSsaType? ResultType = null,
-    string? Condition = null)
+    string? Condition = null,
+    SpikeSsaMemberReference? Member = null)
 {
     public static Step Nothing { get; } = new(StepKind.None);
 }
@@ -308,12 +309,28 @@ internal static class SpikeSsaSteps
             Op: "field.get",
             Detail: instruction.Operand,
             PopCount: 1,
-            ResultType: fieldType);
+            ResultType: fieldType,
+            Member: FieldReference(instruction));
     }
 
     private static Step? StoreField(IlInstruction instruction, IReadOnlyList<SpikeSsaType> stack, out string reason) =>
         TryPeek(stack, 1, instruction, out _, out reason)
-            ? new Step(StepKind.Value, Op: "field.set", Detail: instruction.Operand, PopCount: 2)
+            ? new Step(
+                StepKind.Value,
+                Op: "field.set",
+                Detail: instruction.Operand,
+                PopCount: 2,
+                Member: FieldReference(instruction))
+            : null;
+
+    /// <summary>
+    /// The field the token names, or null when the instruction carries no field token. A
+    /// missing token is not refused here: it costs a consumer the field's identity, which is
+    /// that consumer's decision to report, and refusing it would narrow what normalises.
+    /// </summary>
+    private static SpikeSsaMemberReference? FieldReference(IlInstruction instruction) =>
+        instruction.FieldOperand is { } field
+            ? new SpikeSsaMemberReference(field.OwnerName, field.Name)
             : null;
 
     private static Step? NewArray(IlInstruction instruction, IReadOnlyList<SpikeSsaType> stack, out string reason)
@@ -367,7 +384,8 @@ internal static class SpikeSsaSteps
             Op: "new.object",
             Detail: callee.MemberName,
             PopCount: callee.ArgumentCount,
-            ResultType: constructed);
+            ResultType: constructed,
+            Member: new SpikeSsaMemberReference(callee.OwnerName, callee.Name));
     }
 
     private static Step? Call(IlInstruction instruction, IReadOnlyList<SpikeSsaType> stack, out string reason)
@@ -401,7 +419,8 @@ internal static class SpikeSsaSteps
             Op: "call",
             Detail: callee.MemberName,
             PopCount: popCount,
-            ResultType: resultType);
+            ResultType: resultType,
+            Member: new SpikeSsaMemberReference(callee.OwnerName, callee.Name));
     }
 
     private static Step? ReturnStep(
