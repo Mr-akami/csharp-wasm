@@ -18,7 +18,9 @@ public static class CommandLine
         Usage:
           cswasm --version            Print cswasm and pinned toolchain versions
           cswasm toolchain            Verify the local toolchain against the pin
-          cswasm compile <input.dll>  Compile an assembly to WebAssembly   (Step 1)
+          cswasm compile <input.dll> -o <output.wasm> [--keep-intermediates]
+                                      Compile an assembly to WebAssembly; --keep-intermediates
+                                      leaves the generated MoonBit package on disk
           cswasm check <input.dll>    Report package compatibility levels  (Step 3)
           cswasm dump il <input.dll>  Print the CIL the frontend read from an assembly
           cswasm dump ssa <input.dll> Print that CIL normalised into explicit values
@@ -42,7 +44,7 @@ public static class CommandLine
             "--help" or "-h" or "help" => Help(stdout),
             "--version" or "-v" or "version" => Version(stdout),
             "toolchain" => Toolchain(stdout, stderr),
-            "compile" => NotImplementedYet("compile", "Step 1 (issue #2)", stderr),
+            "compile" => Compile(args, stdout, stderr),
             "check" => NotImplementedYet("check", "Step 3 (issue #4)", stderr),
             "dump" => Dump(args, stdout, stderr),
             var unknown => Unknown(unknown, stderr),
@@ -90,6 +92,20 @@ public static class CommandLine
         stdout.WriteLine($"toolchain matches the pin ({pin.MoonBit.Version})");
         return ExitSuccess;
     }
+
+    /// <summary>
+    /// The argument shapes <c>compile</c> accepts. The output path is required: issue #17 gives
+    /// no default for it, and guessing one would put a module somewhere the user did not ask
+    /// for.
+    /// </summary>
+    private static int Compile(string[] args, TextWriter stdout, TextWriter stderr) => args switch
+    {
+        ["compile", var input, "-o", var output] =>
+            CompileCommand.Run(input, output, keepIntermediates: false, stdout, stderr),
+        ["compile", var input, "-o", var output, "--keep-intermediates"] =>
+            CompileCommand.Run(input, output, keepIntermediates: true, stdout, stderr),
+        _ => Unknown(string.Join(' ', args), stderr),
+    };
 
     private static int Dump(string[] args, TextWriter stdout, TextWriter stderr) => args switch
     {

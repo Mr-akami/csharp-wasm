@@ -34,8 +34,27 @@ public sealed class MoonBitEmitterTests
                 new SpikeSsaTypeDefinition(OwnerName, [], methods),
             ]);
 
-    private static IReadOnlyList<Diagnostic> Emit(SpikeSsaAssembly assembly, out string? source) =>
-        MoonBitEmitter.Emit(assembly, out source);
+    private static IReadOnlyList<Diagnostic> Emit(SpikeSsaAssembly assembly, out string? source)
+    {
+        var diagnostics = MoonBitEmitter.Emit(assembly, out var module);
+        source = module?.Source;
+        return diagnostics;
+    }
+
+    /// <summary>
+    /// The name the emitter gave the field <c>HandBuilt.Point::X</c>, read out of the struct it
+    /// declared. MoonBit rejects a field name that starts with a capital, so the C# name cannot
+    /// be carried over verbatim and the test does not write the generated spelling down.
+    /// </summary>
+    private static string FieldNameForX(string source)
+    {
+        var match = System.Text.RegularExpressions.Regex.Match(
+            source,
+            @"mut\s+([A-Za-z_][A-Za-z0-9_]*X[A-Za-z0-9_]*)\s*:");
+
+        Assert.True(match.Success, "No field generated for X in:\n" + source);
+        return match.Groups[1].Value;
+    }
 
     private static string Refusal(SpikeSsaAssembly assembly)
     {
@@ -87,7 +106,7 @@ public sealed class MoonBitEmitterTests
 
         Assert.DoesNotContain(diagnostics, diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
         Assert.NotNull(source);
-        Assert.Contains("v1.X = v2", source, StringComparison.Ordinal);
+        Assert.Contains("v1." + FieldNameForX(source) + " = v2", source, StringComparison.Ordinal);
         Assert.Contains("v0[v2] = v1", source, StringComparison.Ordinal);
     }
 

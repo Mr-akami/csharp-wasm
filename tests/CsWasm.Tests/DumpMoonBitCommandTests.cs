@@ -20,6 +20,21 @@ public sealed class DumpMoonBitCommandTests
         return (code, stdout.ToString(), stderr.ToString());
     }
 
+    /// <summary>
+    /// The name the struct declares for the field the C# one called <paramref name="cSharpName"/>.
+    /// It is read out of the declaration rather than written down here, so that the reads can
+    /// be checked against the declaration without this file owning the generated spelling.
+    /// </summary>
+    private static string DeclaredField(string output, string cSharpName)
+    {
+        var match = System.Text.RegularExpressions.Regex.Match(
+            output,
+            @"mut\s+([A-Za-z_][A-Za-z0-9_]*" + cSharpName + @"[A-Za-z0-9_]*)\s*:");
+
+        Assert.True(match.Success, $"No field declared for {cSharpName} in:\n{output}");
+        return match.Groups[1].Value;
+    }
+
     private static string EmitPoc()
     {
         var (code, output, error) = Run("dump", "moonbit", SamplePaths.Poc);
@@ -71,16 +86,19 @@ public sealed class DumpMoonBitCommandTests
         Assert.Contains("IL_001e", output, StringComparison.Ordinal);
     }
 
-    // MB-EMIT-TYPE: a C# class becomes a struct with mutable fields, and the field names stay
-    // readable rather than being hashed away (issue #16 mapping table, completion condition).
+    // MB-EMIT-TYPE: a C# class becomes a struct with mutable fields, and the C# field name is
+    // still readable in the generated one (issue #16 mapping table, completion condition).
+    // MoonBit rejects a field name that starts with a capital, so Point's X and Y cannot be
+    // carried over verbatim; what has to survive is that each field is mutable and still names
+    // the C# field it came from (docs/moonbit-packaging.md).
     [Fact]
     public void EmittedSourceDeclaresPointAsAStructWithMutableFields()
     {
         var output = EmitPoc();
 
         Assert.Contains("struct", output, StringComparison.Ordinal);
-        Assert.Matches(@"mut\s+X\s*:", output);
-        Assert.Matches(@"mut\s+Y\s*:", output);
+        Assert.Matches(@"mut\s+[A-Za-z_][A-Za-z0-9_]*X[A-Za-z0-9_]*\s*:", output);
+        Assert.Matches(@"mut\s+[A-Za-z_][A-Za-z0-9_]*Y[A-Za-z0-9_]*\s*:", output);
     }
 
     // MB-EMIT-ARRAY: T[] becomes Array[T], element type included. Losing the element type or
@@ -90,7 +108,7 @@ public sealed class DumpMoonBitCommandTests
     {
         var output = EmitPoc();
 
-        Assert.Matches(@"Array\[\s*__cs_Point_[0-9a-f]+\s*\]", output);
+        Assert.Matches(@"Array\[\s*Cs_Point_[0-9a-f]+\s*\]", output);
     }
 
     // MB-EMIT-FN: Sum is a static C# method, so it becomes a plain fn with a parameter and a
@@ -130,14 +148,16 @@ public sealed class DumpMoonBitCommandTests
     }
 
     // MB-EMIT-INSTR: the operations Sum's SSA is made of - array.get, array.length, field.get,
-    // add, lt - all reach the text. field.get in particular must read X and Y by name.
+    // add, lt - all reach the text. field.get in particular must read the fields the C# X and
+    // Y became, through the same names the struct declares them under: MoonBit rejects a field
+    // called X, so what has to hold is that the read and the declaration agree.
     [Fact]
     public void EmittedSourceLowersSumsOperations()
     {
         var output = EmitPoc();
 
-        Assert.Contains(".X", output, StringComparison.Ordinal);
-        Assert.Contains(".Y", output, StringComparison.Ordinal);
+        Assert.Contains("." + DeclaredField(output, "X"), output, StringComparison.Ordinal);
+        Assert.Contains("." + DeclaredField(output, "Y"), output, StringComparison.Ordinal);
         Assert.Contains("length()", output, StringComparison.Ordinal);
         Assert.Contains("+", output, StringComparison.Ordinal);
         Assert.Contains("<", output, StringComparison.Ordinal);

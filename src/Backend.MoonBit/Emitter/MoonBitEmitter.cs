@@ -33,17 +33,18 @@ public static class MoonBitEmitter
         + "// This step inserts no implicit exception checks; see docs/reports/step1.md and CSW1005.\n";
 
     /// <summary>
-    /// Writes <paramref name="assembly"/> into <paramref name="source"/> and returns the
-    /// diagnostics of the run. <paramref name="source"/> is null when any of them is an error:
+    /// Writes <paramref name="assembly"/> into <paramref name="module"/> and returns the
+    /// diagnostics of the run. <paramref name="module"/> is null when any of them is an error:
     /// a file describing part of an assembly would read as if it described all of it
     /// (docs/diagnostics.md rule 1).
     /// </summary>
-    public static IReadOnlyList<Diagnostic> Emit(SpikeSsaAssembly assembly, out string? source)
+    public static IReadOnlyList<Diagnostic> Emit(SpikeSsaAssembly assembly, out MoonBitModule? module)
     {
         ArgumentNullException.ThrowIfNull(assembly);
 
         var diagnostics = new List<Diagnostic>();
         var text = new StringBuilder(Header);
+        var exports = new List<string>();
 
         foreach (var type in assembly.Types)
         {
@@ -65,13 +66,18 @@ public static class MoonBitEmitter
                 }
 
                 text.Append(LineFeed);
-                text.Append(function);
+                text.Append(function.Text);
+
+                if (function.IsExported)
+                {
+                    exports.Add(function.Name);
+                }
             }
         }
 
-        source = diagnostics.Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+        module = diagnostics.Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             ? null
-            : text.ToString();
+            : new MoonBitModule(text.ToString(), exports);
 
         return diagnostics;
     }

@@ -63,4 +63,11 @@ public readonly record struct DiagnosticCode(int Number)
 
     /// <summary>A toolchain executable could not be run, or failed while being probed.</summary>
     public static DiagnosticCode ToolchainProbeFailed => new(5003);
+
+    /// <summary>
+    /// The pinned MoonBit compiler rejected the generated package, or built it without
+    /// producing a module. The location is inside the generated MoonBit and the raw toolchain
+    /// output is attached; mapping it back to C# is Step 8 (docs/diagnostics.md rule 2).
+    /// </summary>
+    public static DiagnosticCode MoonBitBuildFailed => new(5004);
 }

@@ -34,6 +34,7 @@ The band is the leading digit, so `DiagnosticCode.Category` is derived, never st
 | `CSW5001` | error    | A required MoonBit executable was not found                     |
 | `CSW5002` | error    | A MoonBit executable does not match `tools/toolchain.json`      |
 | `CSW5003` | error    | A toolchain executable could not be run while being probed      |
+| `CSW5004` | error    | The MoonBit compiler rejected the generated package             |
 
 ## Rules
 
