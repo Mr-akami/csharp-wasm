@@ -19,11 +19,18 @@ public static class SupportedInstructions
     /// <c>ldlen</c> pushes a native int, and <c>call</c>, which the implicit constructor of
     /// <c>Point</c> uses to reach its base constructor.
     /// </summary>
+    /// <remarks>
+    /// <c>ldloca</c> is in the set even though no local can be promoted to an SSA value once
+    /// its address is taken. Reading and printing the instruction is this gate's business;
+    /// refusing the promotion is the SSA builder's, under CSW1003. Leaving it out here would
+    /// stop such a body at CSW1001 and make CSW1003 unreachable.
+    /// </remarks>
     private static readonly HashSet<string> Supported = new(StringComparer.Ordinal)
     {
         "ldarg", "ldarg.s", "ldarg.0", "ldarg.1", "ldarg.2", "ldarg.3",
         "ldloc", "ldloc.s", "ldloc.0", "ldloc.1", "ldloc.2", "ldloc.3",
         "stloc", "stloc.s", "stloc.0", "stloc.1", "stloc.2", "stloc.3",
+        "ldloca", "ldloca.s",
         "ldfld", "stfld",
         "ldc.i4", "ldc.i4.s", "ldc.i4.m1",
         "ldc.i4.0", "ldc.i4.1", "ldc.i4.2", "ldc.i4.3", "ldc.i4.4",

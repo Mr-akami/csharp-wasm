@@ -15,6 +15,16 @@ public static class UnsupportedShapes
     public static T Identity<T>(T value) => value;
 
     /// <summary>
+    /// Takes the address of a local, so the local cannot be promoted to an SSA value
+    /// (CSW1003). The opcode itself decodes and prints; only the promotion refuses.
+    /// </summary>
+    public static int CompareLocal(int value)
+    {
+        int local = value;
+        return local.CompareTo(2);
+    }
+
+    /// <summary>
     /// Carries one catch region so the exception-region decoding can be observed from the
     /// model. Its <c>leave</c> instructions are outside the supported opcode set, so this
     /// member is only reachable through the model, never through a successful dump.

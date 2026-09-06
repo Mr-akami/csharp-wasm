@@ -19,6 +19,8 @@ public sealed class DiagnosticsDocTests
     {
         DiagnosticCode.UnsupportedOpcode.Number,
         DiagnosticCode.UnsupportedMetadata.Number,
+        DiagnosticCode.LocalAddressTaken.Number,
+        DiagnosticCode.BodyNotNormalizable.Number,
     };
 
     [Theory]
@@ -39,5 +41,23 @@ public sealed class DiagnosticsDocTests
     {
         Assert.Equal(1001, DiagnosticCode.UnsupportedOpcode.Number);
         Assert.Equal(1002, DiagnosticCode.UnsupportedMetadata.Number);
+        Assert.Equal(1003, DiagnosticCode.LocalAddressTaken.Number);
+        Assert.Equal(1004, DiagnosticCode.BodyNotNormalizable.Number);
+    }
+
+    // Codes are allocated once and never reused (docs/diagnostics.md), so the two the SSA
+    // step introduces must not collide with the two the CIL step already issued.
+    [Fact]
+    public void FrontendCodesAreDistinct()
+    {
+        var numbers = new[]
+        {
+            DiagnosticCode.UnsupportedOpcode.Number,
+            DiagnosticCode.UnsupportedMetadata.Number,
+            DiagnosticCode.LocalAddressTaken.Number,
+            DiagnosticCode.BodyNotNormalizable.Number,
+        };
+
+        Assert.Equal(numbers.Length, numbers.Distinct().Count());
     }
 }
