@@ -19,7 +19,23 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Common/CsWasm.Common.csproj" />
     <ProjectReference Include="../../src/Backend.MoonBit/CsWasm.Backend.MoonBit.csproj" />
+    <ProjectReference Include="../../src/Frontend.Cil/CsWasm.Frontend.Cil.csproj" />
     <ProjectReference Include="../../src/Driver/CsWasm.Driver.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The sample assemblies are input data for the frontend, not code the tests call.
+         ReferenceOutputAssembly=false keeps them off the test assembly's reference list,
+         so a test can assert that reading a DLL never loads it into this runtime;
+         OutputItemType=Content still builds them and copies the DLL next to the tests. -->
+    <ProjectReference Include="../Samples/CsWasm.Samples.Poc/CsWasm.Samples.Poc.csproj"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Content"
+                      CopyToOutputDirectory="PreserveNewest" />
+    <ProjectReference Include="../Samples/CsWasm.Samples.Unsupported/CsWasm.Samples.Unsupported.csproj"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Content"
+                      CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

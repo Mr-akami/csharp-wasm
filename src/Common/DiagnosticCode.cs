@@ -23,6 +23,13 @@ public readonly record struct DiagnosticCode(int Number)
     /// <summary>An input file named on the command line does not exist.</summary>
     public static DiagnosticCode InputNotFound => new(3);
 
+    // CSW1xxx - frontend.
+    /// <summary>A CIL instruction is outside the instruction set the frontend supports.</summary>
+    public static DiagnosticCode UnsupportedOpcode => new(1001);
+
+    /// <summary>A metadata construct is outside the subset the frontend models.</summary>
+    public static DiagnosticCode UnsupportedMetadata => new(1002);
+
     // CSW5xxx - toolchain.
     /// <summary>A required MoonBit executable was not found on PATH or under MOON_HOME.</summary>
     public static DiagnosticCode ToolchainNotFound => new(5001);

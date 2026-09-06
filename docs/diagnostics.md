@@ -25,6 +25,8 @@ The band is the leading digit, so `DiagnosticCode.Category` is derived, never st
 | `CSW0001` | error    | Command is planned but not implemented in this step             |
 | `CSW0002` | error    | Unknown command or option                                       |
 | `CSW0003` | error    | Input file named on the command line does not exist             |
+| `CSW1001` | error    | A CIL instruction is outside the supported instruction set       |
+| `CSW1002` | error    | A metadata construct is outside the subset the frontend models   |
 | `CSW5001` | error    | A required MoonBit executable was not found                     |
 | `CSW5002` | error    | A MoonBit executable does not match `tools/toolchain.json`      |
 | `CSW5003` | error    | A toolchain executable could not be run while being probed      |
