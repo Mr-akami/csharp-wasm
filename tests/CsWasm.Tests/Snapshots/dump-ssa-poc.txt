@@ -1,0 +1,32 @@
+assembly CsWasm.Samples.Poc
+type CsWasm.Samples.Poc.Point
+  method .ctor
+    IL_0000:
+      %0 : ref<CsWasm.Samples.Poc.Point> = arg 0
+      call System.Object::.ctor, %0
+      return
+type CsWasm.Samples.Poc.Sample
+  method Sum
+    IL_0000:
+      %0 : array<ref<CsWasm.Samples.Poc.Point>> = arg 0
+      %1 : i32 = const 0
+      %2 : i32 = const 0
+      %3 : i32 = const 0
+      %4 : i32 = const 0
+      br IL_001e(%3, %4)
+    IL_0006:
+      %5 : ref<CsWasm.Samples.Poc.Point> = array.get %0, %14
+      %6 : i32 = field.get int32 CsWasm.Samples.Poc.Point::X, %5
+      %7 : ref<CsWasm.Samples.Poc.Point> = array.get %0, %14
+      %8 : i32 = field.get int32 CsWasm.Samples.Poc.Point::Y, %7
+      %9 : i32 = add %6, %8
+      %10 : i32 = add %13, %9
+      %11 : i32 = const 1
+      %12 : i32 = add %14, %11
+      br IL_001e(%10, %12)
+    IL_001e(%13 : i32, %14 : i32):
+      %15 : i32 = array.length %0
+      %16 : i32 = conv.i4 %15
+      br.lt %14, %16 -> IL_0006 else IL_0024
+    IL_0024:
+      return %13

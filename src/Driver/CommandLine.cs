@@ -21,6 +21,7 @@ public static class CommandLine
           cswasm compile <input.dll>  Compile an assembly to WebAssembly   (Step 1)
           cswasm check <input.dll>    Report package compatibility levels  (Step 3)
           cswasm dump il <input.dll>  Print the CIL the frontend read from an assembly
+          cswasm dump ssa <input.dll> Print that CIL normalised into explicit values
           cswasm --help
 
         Documentation: docs/architecture.md, docs/diagnostics.md, CONTEXT.md
@@ -88,10 +89,12 @@ public static class CommandLine
         return ExitSuccess;
     }
 
-    private static int Dump(string[] args, TextWriter stdout, TextWriter stderr) =>
-        args is ["dump", "il", var input]
-            ? DumpCommand.Il(input, stdout, stderr)
-            : Unknown(string.Join(' ', args), stderr);
+    private static int Dump(string[] args, TextWriter stdout, TextWriter stderr) => args switch
+    {
+        ["dump", "il", var input] => DumpCommand.Il(input, stdout, stderr),
+        ["dump", "ssa", var input] => DumpCommand.Ssa(input, stdout, stderr),
+        _ => Unknown(string.Join(' ', args), stderr),
+    };
 
     private static int NotImplementedYet(string command, string step, TextWriter stderr)
     {

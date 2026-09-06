@@ -14,6 +14,9 @@ namespace CsWasm.Frontend.Cil;
 /// instead of being approximated, so the reader can report it as CSW1002 rather than let a
 /// signature it cannot represent look as if it had been understood.
 /// </remarks>
+/// <summary>A method token read as data: who owns it, what it is called and what it takes.</summary>
+internal sealed record MethodTokenInfo(string OwnerName, string Name, MethodSignature<string> Signature);
+
 internal sealed class CilSignatureFormatter : ISignatureTypeProvider<string, object?>
 {
     private readonly List<string> unsupported = [];
@@ -140,6 +143,69 @@ internal sealed class CilSignatureFormatter : ISignatureTypeProvider<string, obj
 
             default:
                 return TypeName(reader, handle);
+        }
+    }
+
+    /// <summary>
+    /// The owner, the name and the signature of a method token, or null for a handle that
+    /// names no method. This is the same token <see cref="MemberName"/> renders, read as data
+    /// so that a consumer never has to recover an arity from the rendered text.
+    /// </summary>
+    public MethodTokenInfo? MethodToken(MetadataReader reader, EntityHandle handle)
+    {
+        switch (handle.Kind)
+        {
+            case HandleKind.MethodDefinition:
+            {
+                var method = reader.GetMethodDefinition((MethodDefinitionHandle)handle);
+                return new MethodTokenInfo(
+                    DefinitionName(reader, method.GetDeclaringType()),
+                    reader.GetString(method.Name),
+                    method.DecodeSignature(this, null));
+            }
+
+            case HandleKind.MemberReference:
+            {
+                var member = reader.GetMemberReference((MemberReferenceHandle)handle);
+                if (member.GetKind() != MemberReferenceKind.Method)
+                {
+                    return null;
+                }
+
+                return new MethodTokenInfo(
+                    TypeName(reader, member.Parent),
+                    reader.GetString(member.Name),
+                    member.DecodeMethodSignature(this, null));
+            }
+
+            case HandleKind.MethodSpecification:
+                return MethodToken(reader, reader.GetMethodSpecification((MethodSpecificationHandle)handle).Method);
+
+            default:
+                return null;
+        }
+    }
+
+    /// <summary>
+    /// The declared type of a field token, or null for a handle that names no field.
+    /// </summary>
+    public string? FieldTypeName(MetadataReader reader, EntityHandle handle)
+    {
+        switch (handle.Kind)
+        {
+            case HandleKind.FieldDefinition:
+                return reader.GetFieldDefinition((FieldDefinitionHandle)handle).DecodeSignature(this, null);
+
+            case HandleKind.MemberReference:
+            {
+                var member = reader.GetMemberReference((MemberReferenceHandle)handle);
+                return member.GetKind() == MemberReferenceKind.Field
+                    ? member.DecodeFieldSignature(this, null)
+                    : null;
+            }
+
+            default:
+                return null;
         }
     }
 

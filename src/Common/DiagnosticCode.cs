@@ -30,6 +30,19 @@ public readonly record struct DiagnosticCode(int Number)
     /// <summary>A metadata construct is outside the subset the frontend models.</summary>
     public static DiagnosticCode UnsupportedMetadata => new(1002);
 
+    /// <summary>
+    /// A method takes the address of one of its locals, so its locals cannot be turned into
+    /// SSA values.
+    /// </summary>
+    public static DiagnosticCode LocalAddressTaken => new(1003);
+
+    /// <summary>
+    /// A method body cannot be normalised into the SSA form this step builds: the evaluation
+    /// stack does not line up at a merge, an instruction has no value form, or a type is
+    /// outside the minimal type family.
+    /// </summary>
+    public static DiagnosticCode BodyNotNormalizable => new(1004);
+
     // CSW5xxx - toolchain.
     /// <summary>A required MoonBit executable was not found on PATH or under MOON_HOME.</summary>
     public static DiagnosticCode ToolchainNotFound => new(5001);
