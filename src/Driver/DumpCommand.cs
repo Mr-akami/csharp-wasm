@@ -1,4 +1,3 @@
-using CsWasm.Backend.MoonBit.Emitter;
 using CsWasm.Diagnostics;
 using CsWasm.Frontend.Cil;
 using CsWasm.Frontend.Cil.Ssa;
@@ -21,7 +20,7 @@ internal static class DumpCommand
     public static int Il(string path, TextWriter stdout, TextWriter stderr)
     {
         var diagnostics = new List<Diagnostic>();
-        var assembly = Read(path, diagnostics);
+        var assembly = AssemblyPipeline.Read(path, diagnostics);
 
         if (assembly is not null && diagnostics.Count == 0)
         {
@@ -35,7 +34,7 @@ internal static class DumpCommand
     public static int Ssa(string path, TextWriter stdout, TextWriter stderr)
     {
         var diagnostics = new List<Diagnostic>();
-        var assembly = Read(path, diagnostics);
+        var assembly = AssemblyPipeline.Read(path, diagnostics);
 
         if (assembly is not null)
         {
@@ -65,21 +64,7 @@ internal static class DumpCommand
     /// </remarks>
     public static int MoonBit(string path, TextWriter stdout, TextWriter stderr)
     {
-        var diagnostics = new List<Diagnostic>();
-        var assembly = Read(path, diagnostics);
-        string? source = null;
-
-        if (assembly is not null)
-        {
-            diagnostics.AddRange(SpikeSsaBuilder.Build(assembly, out var ssa));
-
-            // The backend runs only over a model that is whole: lowering part of an assembly
-            // would report failures of the part the frontend already refused.
-            if (diagnostics.Count == 0)
-            {
-                diagnostics.AddRange(MoonBitEmitter.Emit(ssa, out source));
-            }
-        }
+        var diagnostics = AssemblyPipeline.GenerateMoonBit(path, out var module);
 
         var failed = diagnostics.Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
 
@@ -88,33 +73,13 @@ internal static class DumpCommand
             stderr.WriteLine(diagnostic.Format());
         }
 
-        if (failed || source is null)
+        if (failed || module is null)
         {
             return CommandLine.ExitFailure;
         }
 
-        stdout.Write(source);
+        stdout.Write(module.Source);
         return CommandLine.ExitSuccess;
-    }
-
-    /// <summary>
-    /// Reads the assembly and applies the opcode gate, appending what either refused. Returns
-    /// null when there was no file to read.
-    /// </summary>
-    private static AssemblyModel? Read(string path, List<Diagnostic> diagnostics)
-    {
-        if (!File.Exists(path))
-        {
-            diagnostics.Add(Diagnostic.Error(
-                DiagnosticCode.InputNotFound,
-                $"Input file '{path}' does not exist.",
-                "Pass the path of a compiled assembly, for example bin/Debug/net9.0/Sample.dll."));
-            return null;
-        }
-
-        diagnostics.AddRange(CilAssemblyReader.Read(path, out var assembly));
-        diagnostics.AddRange(SupportedInstructions.Validate(assembly));
-        return assembly;
     }
 
     private static int Report(IReadOnlyList<Diagnostic> diagnostics, TextWriter stderr)

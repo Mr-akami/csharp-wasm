@@ -22,8 +22,10 @@ linear memory.
 
 ## Status
 
-Step 0 (foundations) is in place. `compile` and `check` refuse with `CSW0001` until
-Step 1 and Step 3 land.
+Step 0 (foundations) is in place. `cswasm compile <input.dll> -o <output.wasm>` compiles the
+proof-of-concept subset end to end, through the pinned MoonBit toolchain
+([`docs/moonbit-packaging.md`](docs/moonbit-packaging.md)). `check` refuses with `CSW0001`
+until Step 3 lands.
 
 ## Getting started
 

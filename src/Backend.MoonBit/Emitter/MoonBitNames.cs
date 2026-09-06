@@ -7,13 +7,21 @@ namespace CsWasm.Backend.MoonBit.Emitter;
 
 /// <summary>
 /// Decides the identifier the emitter gives a generated type, function or field:
-/// <c>__cs_&lt;short name&gt;_&lt;stable hash&gt;</c> (docs/architecture.md section 9.2).
+/// <c>__cs_&lt;short name&gt;_&lt;stable hash&gt;</c>, and <c>Cs_&lt;short name&gt;_&lt;stable
+/// hash&gt;</c> for a type (docs/architecture.md section 9.2).
 /// </summary>
 /// <remarks>
 /// The hash is decided by the .NET identity of what is being named and by nothing else - not
 /// by the file the assembly was read from, not by the run, and not by the other members of the
 /// same assembly - so a rebuild that did not change a type does not change the name of that
 /// type, which is what makes incremental builds and size diffs readable.
+/// <para>
+/// The two prefixes are MoonBit's rule, not a preference: the pinned compiler requires a type
+/// name to start with an upper-case letter and a struct field name to start with a lower-case
+/// one, and rejects everything else at parse time (docs/moonbit-packaging.md). A single
+/// <c>__cs_</c> prefix cannot satisfy both, so the type prefix carries the capital and the
+/// short name and the hash stay in the same places.
+/// </para>
 /// <para>
 /// The identity string this hashes is spelled here rather than borrowed from the SSA dump
 /// writer on purpose: the dump is a debug view whose wording is free to change, and a change
@@ -23,6 +31,12 @@ namespace CsWasm.Backend.MoonBit.Emitter;
 internal static class MoonBitNames
 {
     private const string Prefix = "__cs_";
+
+    /// <summary>
+    /// The prefix of a generated type name. MoonBit accepts a type name only when its first
+    /// character is an upper-case ASCII letter, which rules <see cref="Prefix"/> out here.
+    /// </summary>
+    private const string TypePrefix = "Cs_";
 
     /// <summary>
     /// The identifiers MoonBit reserves. A C# field whose name is one of them cannot be
@@ -37,7 +51,8 @@ internal static class MoonBitNames
     };
 
     /// <summary>The identifier of a type, decided by its fully qualified .NET name alone.</summary>
-    public static string OfType(string fullName) => Compose(ShortName(fullName), "type " + fullName);
+    public static string OfType(string fullName) =>
+        TypePrefix + ShortName(fullName) + "_" + StableHash("type " + fullName);
 
     /// <summary>
     /// The identifier of a method, decided by its owner, its name and its declared signature.
@@ -59,12 +74,20 @@ internal static class MoonBitNames
     }
 
     /// <summary>
-    /// The identifier of a struct field. A C# name that is already a MoonBit identifier is
+    /// The identifier of a struct field. A C# name that is already a MoonBit field name is
     /// carried over as it stands, because the generated source has to be readable back to the
-    /// C# it came from; anything else is given a generated name.
+    /// C# it came from; anything else is given a generated name that still carries the C# name
+    /// in its short-name half.
     /// </summary>
+    /// <remarks>
+    /// MoonBit requires a struct field name to start with a lower-case letter or an underscore
+    /// and rejects <c>X</c> at parse time, so a Pascal-cased C# field cannot be carried over.
+    /// Lower-casing its first letter instead would map the C# pair <c>X</c> and <c>x</c> onto
+    /// one field; the generated name is decided by the field's own identity alone and cannot
+    /// collide.
+    /// </remarks>
     public static string OfField(string ownerFullName, string fieldName) =>
-        IsPlainIdentifier(fieldName) && !Reserved.Contains(fieldName)
+        IsFieldIdentifier(fieldName) && !Reserved.Contains(fieldName)
             ? fieldName
             : Compose(ShortName(fieldName), "field " + ownerFullName + "::" + fieldName);
 
@@ -131,8 +154,9 @@ internal static class MoonBitNames
         return text.Length == 0 ? "_" : text.ToString();
     }
 
-    private static bool IsPlainIdentifier(string name) =>
+    /// <summary>Whether MoonBit would accept <paramref name="name"/> as a struct field name.</summary>
+    private static bool IsFieldIdentifier(string name) =>
         name.Length > 0
-        && (char.IsAsciiLetter(name[0]) || name[0] == '_')
+        && (char.IsAsciiLetterLower(name[0]) || name[0] == '_')
         && name.All(character => char.IsAsciiLetterOrDigit(character) || character == '_');
 }

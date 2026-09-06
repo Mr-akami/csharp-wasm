@@ -9,16 +9,23 @@ namespace CsWasm.Tests;
 /// </summary>
 /// <remarks>
 /// Issue #16 fixes the shape of a generated identifier at
-/// <c>__cs_&lt;short name&gt;_&lt;stable hash&gt;</c> and requires that it be decided by the
-/// .NET identity of what it names and by nothing else: not by the file the assembly was read
-/// from, not by the run, and not by unrelated members of the same assembly. The command is the
-/// only place all four are observable at once, so they are asserted on its output.
+/// <c>&lt;prefix&gt;&lt;short name&gt;_&lt;stable hash&gt;</c> and requires that it be decided
+/// by the .NET identity of what it names and by nothing else: not by the file the assembly was
+/// read from, not by the run, and not by unrelated members of the same assembly. The command is
+/// the only place all four are observable at once, so they are asserted on its output.
+/// <para>
+/// There are two prefixes because MoonBit requires a type name to start with a capital and
+/// rejects <c>__cs_</c> there (docs/moonbit-packaging.md): types are <c>Cs_</c>, everything
+/// else is <c>__cs_</c>. The short name and the hash sit in the same places in both.
+/// </para>
 /// </remarks>
 public sealed class MoonBitNamingTests
 {
-    private static readonly Regex GeneratedIdentifier = new(@"__cs_[A-Za-z0-9_]+", RegexOptions.None);
+    private static readonly Regex GeneratedIdentifier =
+        new(@"(?<![A-Za-z0-9_])(?:__cs_|Cs_)[A-Za-z0-9_]+", RegexOptions.None);
 
-    private static readonly Regex WellFormedIdentifier = new(@"^__cs_[A-Za-z0-9_]+_[0-9a-f]+$", RegexOptions.None);
+    private static readonly Regex WellFormedIdentifier =
+        new(@"^(?:__cs_|Cs_)[A-Za-z0-9_]+_[0-9a-f]+$", RegexOptions.None);
 
     private static string Emit(string assemblyPath)
     {
@@ -36,7 +43,7 @@ public sealed class MoonBitNamingTests
         var matches = GeneratedIdentifier
             .Matches(output)
             .Select(match => match.Value)
-            .Where(name => name.StartsWith("__cs_Point_", StringComparison.Ordinal))
+            .Where(name => name.StartsWith("Cs_Point_", StringComparison.Ordinal))
             .Distinct(StringComparer.Ordinal)
             .ToList();
 

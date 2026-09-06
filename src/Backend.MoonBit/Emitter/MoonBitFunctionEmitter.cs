@@ -6,6 +6,17 @@ using CsWasm.Frontend.Cil.Ssa;
 namespace CsWasm.Backend.MoonBit.Emitter;
 
 /// <summary>
+/// One generated MoonBit function: the identifier it was given, its text, and whether it is
+/// one of the functions the package exports.
+/// </summary>
+/// <remarks>
+/// The name is carried out of the emitter rather than read back out of the generated text:
+/// the text is an output format (docs/architecture.md section 4.2), and the package manifest
+/// needs the exported names before anything has been written down.
+/// </remarks>
+internal sealed record MoonBitFunction(string Name, string Text, bool IsExported);
+
+/// <summary>
 /// <c>emit_function</c>: turns one SSA method into one MoonBit <c>fn</c>
 /// (docs/architecture.md section 9.1).
 /// </summary>
@@ -32,6 +43,7 @@ internal sealed class MoonBitFunctionEmitter
     private int? loopHeader;
     private bool insideLoop;
     private bool refused;
+    private string? name;
 
     public MoonBitFunctionEmitter(string ownerFullName, SpikeSsaMethod method, List<Diagnostic> diagnostics)
     {
@@ -44,7 +56,7 @@ internal sealed class MoonBitFunctionEmitter
     /// The <c>fn</c> for the method, or null when this step cannot lower it. The reason is
     /// appended to the diagnostic list the emitter was given.
     /// </summary>
-    public string? Emit()
+    public MoonBitFunction? Emit()
     {
         if (method.Blocks.Count == 0)
         {
@@ -75,8 +87,15 @@ internal sealed class MoonBitFunctionEmitter
         }
 
         text.Append('}').Append(LineFeed);
-        return text.ToString();
+        return new MoonBitFunction(name!, text.ToString(), IsExported);
     }
+
+    /// <summary>
+    /// Whether the package exports this function. A static C# method is an entry a host can
+    /// call; an instance method needs a receiver the host has no way to make in this step, so
+    /// it is generated but not exported.
+    /// </summary>
+    private bool IsExported => method.IsStatic;
 
     /// <summary>
     /// Finds the one block an edge runs backwards into, which is the loop this step writes as
@@ -189,7 +208,11 @@ internal sealed class MoonBitFunctionEmitter
             returnType = mapped;
         }
 
-        signature = "fn " + MoonBitNames.OfMethod(ownerFullName, method, DeclaredParameterTypes(entry))
+        name = MoonBitNames.OfMethod(ownerFullName, method, DeclaredParameterTypes(entry));
+
+        // MoonBit links an exported function out of the module only when it is public; a
+        // private one is dead code to moonc and is dropped (docs/moonbit-packaging.md).
+        signature = (IsExported ? "pub fn " : "fn ") + name
             + "(" + string.Join(", ", parameters) + ") -> " + returnType + " {";
         return true;
     }
@@ -298,7 +321,9 @@ internal sealed class MoonBitFunctionEmitter
             return;
         }
 
-        var arguments = string.Join(", ", edge.Arguments.Select(MoonBitNames.OfValue));
+        // The values carried round the loop are written as one parenthesised group: MoonBit
+        // reads `loop a, b` as a loop over `a` followed by a stray comma and refuses it.
+        var arguments = "(" + string.Join(", ", edge.Arguments.Select(MoonBitNames.OfValue)) + ")";
 
         if (insideLoop)
         {
@@ -311,7 +336,7 @@ internal sealed class MoonBitFunctionEmitter
 
     private void WriteLoop(int header, string arguments, int depth, StringBuilder text)
     {
-        var parameters = string.Join(", ", blocksByOffset[header].Parameters.Select(MoonBitNames.OfValue));
+        var parameters = "(" + string.Join(", ", blocksByOffset[header].Parameters.Select(MoonBitNames.OfValue)) + ")";
 
         // The header's own IL label is written by the block itself, inside the arm.
         Line(text, depth, "loop " + arguments + " {");

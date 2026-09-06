@@ -32,12 +32,13 @@ public sealed class CommandLineTests
         Assert.Contains("Usage:", output, StringComparison.Ordinal);
     }
 
-    [Theory]
-    [InlineData("compile")]
-    [InlineData("check")]
-    public void PlannedCommandsRefuseInsteadOfPretending(string command)
+    // KEEP-CHECK: issue #17 lifts the refusal for compile only. check keeps its own, and its
+    // CSW0001 is asserted here rather than in CompileCommandTests because it is the contract
+    // this step leaves alone.
+    [Fact]
+    public void CheckRefusesInsteadOfPretending()
     {
-        var (code, _, error) = Run(command, "Sample.dll");
+        var (code, _, error) = Run("check", "Sample.dll");
 
         Assert.Equal(CommandLine.ExitFailure, code);
         Assert.Contains("CSW0001", error, StringComparison.Ordinal);
