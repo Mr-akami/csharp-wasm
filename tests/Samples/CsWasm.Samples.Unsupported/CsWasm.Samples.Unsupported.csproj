@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CsWasm.Samples.Unsupported</RootNamespace>
+    <AssemblyName>CsWasm.Samples.Unsupported</AssemblyName>
+    <IsPackable>false</IsPackable>
+
+    <!-- Same reasoning as CsWasm.Samples.Poc: this assembly is frontend input data and
+         its IL must not vary with the build configuration. -->
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+    <Nullable>disable</Nullable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <IsAotCompatible>false</IsAotCompatible>
+  </PropertyGroup>
+
+</Project>

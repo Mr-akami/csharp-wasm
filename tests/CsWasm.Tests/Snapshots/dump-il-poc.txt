@@ -1,0 +1,43 @@
+assembly CsWasm.Samples.Poc
+type CsWasm.Samples.Poc.Point
+  extends System.Object
+  field int32 X
+  field int32 Y
+  method instance void .ctor()
+    maxstack 8
+    IL_0000: ldarg.0
+    IL_0001: call instance void System.Object::.ctor()
+    IL_0006: ret
+type CsWasm.Samples.Poc.Sample
+  extends System.Object
+  method static int32 Sum(CsWasm.Samples.Poc.Point[])
+    maxstack 4
+    locals init (int32, int32)
+    IL_0000: ldc.i4.0
+    IL_0001: stloc.0
+    IL_0002: ldc.i4.0
+    IL_0003: stloc.1
+    IL_0004: br.s IL_001e
+    IL_0006: ldloc.0
+    IL_0007: ldarg.0
+    IL_0008: ldloc.1
+    IL_0009: ldelem.ref
+    IL_000a: ldfld int32 CsWasm.Samples.Poc.Point::X
+    IL_000f: ldarg.0
+    IL_0010: ldloc.1
+    IL_0011: ldelem.ref
+    IL_0012: ldfld int32 CsWasm.Samples.Poc.Point::Y
+    IL_0017: add
+    IL_0018: add
+    IL_0019: stloc.0
+    IL_001a: ldloc.1
+    IL_001b: ldc.i4.1
+    IL_001c: add
+    IL_001d: stloc.1
+    IL_001e: ldloc.1
+    IL_001f: ldarg.0
+    IL_0020: ldlen
+    IL_0021: conv.i4
+    IL_0022: blt.s IL_0006
+    IL_0024: ldloc.0
+    IL_0025: ret

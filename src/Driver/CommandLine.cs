@@ -20,6 +20,7 @@ public static class CommandLine
           cswasm toolchain            Verify the local toolchain against the pin
           cswasm compile <input.dll>  Compile an assembly to WebAssembly   (Step 1)
           cswasm check <input.dll>    Report package compatibility levels  (Step 3)
+          cswasm dump il <input.dll>  Print the CIL the frontend read from an assembly
           cswasm --help
 
         Documentation: docs/architecture.md, docs/diagnostics.md, CONTEXT.md
@@ -40,6 +41,7 @@ public static class CommandLine
             "toolchain" => Toolchain(stdout, stderr),
             "compile" => NotImplementedYet("compile", "Step 1 (issue #2)", stderr),
             "check" => NotImplementedYet("check", "Step 3 (issue #4)", stderr),
+            "dump" => Dump(args, stdout, stderr),
             var unknown => Unknown(unknown, stderr),
         };
     }
@@ -85,6 +87,11 @@ public static class CommandLine
         stdout.WriteLine($"toolchain matches the pin ({pin.MoonBit.Version})");
         return ExitSuccess;
     }
+
+    private static int Dump(string[] args, TextWriter stdout, TextWriter stderr) =>
+        args is ["dump", "il", var input]
+            ? DumpCommand.Il(input, stdout, stderr)
+            : Unknown(string.Join(' ', args), stderr);
 
     private static int NotImplementedYet(string command, string step, TextWriter stderr)
     {

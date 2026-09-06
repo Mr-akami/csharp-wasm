@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CsWasm.Samples.Poc</RootNamespace>
+    <AssemblyName>CsWasm.Samples.Poc</AssemblyName>
+    <IsPackable>false</IsPackable>
+
+    <!-- This assembly is input data for the CIL frontend, not code cswasm runs. Its IL
+         must be byte-identical in Debug and Release or the dump snapshot breaks:
+         Optimize=false inserts nop, which is outside the supported opcode set. -->
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+
+    <!-- Nullable annotations make Roslyn synthesise NullableAttribute and
+         EmbeddedAttribute, whose constructors use opcodes outside the supported set. -->
+    <Nullable>disable</Nullable>
+
+    <!-- Assembly-level attributes would add no types but do add metadata that differs
+         between local and CI builds (informational version carries the source revision). -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+    <!-- The AOT analyzer targets the compiler, not its test inputs. -->
+    <IsAotCompatible>false</IsAotCompatible>
+  </PropertyGroup>
+
+</Project>

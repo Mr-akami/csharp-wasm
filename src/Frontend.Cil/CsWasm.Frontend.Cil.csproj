@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CsWasm.Frontend.Cil</RootNamespace>
+    <AssemblyName>CsWasm.Frontend.Cil</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Common/CsWasm.Common.csproj" />
+  </ItemGroup>
+
+</Project>

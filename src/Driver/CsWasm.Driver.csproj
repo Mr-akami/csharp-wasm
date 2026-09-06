@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="../Common/CsWasm.Common.csproj" />
     <ProjectReference Include="../Backend.MoonBit/CsWasm.Backend.MoonBit.csproj" />
+    <ProjectReference Include="../Frontend.Cil/CsWasm.Frontend.Cil.csproj" />
   </ItemGroup>
 
   <ItemGroup>
