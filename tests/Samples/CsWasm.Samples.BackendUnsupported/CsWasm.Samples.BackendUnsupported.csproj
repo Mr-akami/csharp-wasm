@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CsWasm.Samples.BackendUnsupported</RootNamespace>
+    <AssemblyName>CsWasm.Samples.BackendUnsupported</AssemblyName>
+    <IsPackable>false</IsPackable>
+
+    <!-- Input data for the CIL frontend, not code cswasm runs. The same build settings as
+         CsWasm.Samples.Poc: Optimize=false inserts nop, which is outside the supported
+         opcode set, and would stop this body at CSW1001 before the backend sees it. -->
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+    <Nullable>disable</Nullable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <IsAotCompatible>false</IsAotCompatible>
+  </PropertyGroup>
+
+</Project>

@@ -36,6 +36,14 @@
                       ReferenceOutputAssembly="false"
                       OutputItemType="Content"
                       CopyToOutputDirectory="PreserveNewest" />
+    <ProjectReference Include="../Samples/CsWasm.Samples.BackendUnsupported/CsWasm.Samples.BackendUnsupported.csproj"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Content"
+                      CopyToOutputDirectory="PreserveNewest" />
+    <ProjectReference Include="../Samples/CsWasm.Samples.NamingStability/CsWasm.Samples.NamingStability.csproj"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Content"
+                      CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

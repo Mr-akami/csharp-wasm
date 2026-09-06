@@ -22,6 +22,8 @@ public static class CommandLine
           cswasm check <input.dll>    Report package compatibility levels  (Step 3)
           cswasm dump il <input.dll>  Print the CIL the frontend read from an assembly
           cswasm dump ssa <input.dll> Print that CIL normalised into explicit values
+          cswasm dump moonbit <input.dll>
+                                      Print the MoonBit source the backend generates
           cswasm --help
 
         Documentation: docs/architecture.md, docs/diagnostics.md, CONTEXT.md
@@ -93,6 +95,7 @@ public static class CommandLine
     {
         ["dump", "il", var input] => DumpCommand.Il(input, stdout, stderr),
         ["dump", "ssa", var input] => DumpCommand.Ssa(input, stdout, stderr),
+        ["dump", "moonbit", var input] => DumpCommand.MoonBit(input, stdout, stderr),
         _ => Unknown(string.Join(' ', args), stderr),
     };
 

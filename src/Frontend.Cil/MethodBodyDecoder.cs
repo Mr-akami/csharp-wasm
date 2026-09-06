@@ -131,7 +131,8 @@ internal static class MethodBodyDecoder
                 FormatOperand(reader, il, info, operandStart, position, formatter),
                 IntOperand(info, il, operandStart, position),
                 CallOperand(reader, il, info, operandStart, formatter),
-                TypeOperand(reader, il, info, operandStart, formatter)));
+                TypeOperand(reader, il, info, operandStart, formatter),
+                FieldOperand(reader, il, info, operandStart, formatter)));
         }
 
         return instructions;
@@ -194,10 +195,27 @@ internal static class MethodBodyDecoder
         }
 
         return new IlCallOperand(
-            method.OwnerName + "::" + method.Name,
+            method.OwnerName,
+            method.Name,
             method.Signature.ParameterTypes.Length,
             method.Signature.Header.IsInstance,
             string.Equals(method.Signature.ReturnType, "void", StringComparison.Ordinal));
+    }
+
+    private static IlFieldOperand? FieldOperand(
+        MetadataReader reader,
+        byte[] il,
+        IlOpCodeInfo info,
+        int operandStart,
+        CilSignatureFormatter formatter)
+    {
+        if (info.Operand != IlOperandKind.InlineField)
+        {
+            return null;
+        }
+
+        var field = formatter.FieldToken(reader, Token(il, operandStart));
+        return field is null ? null : new IlFieldOperand(field.OwnerName, field.Name);
     }
 
     private static string? TypeOperand(
@@ -210,7 +228,7 @@ internal static class MethodBodyDecoder
         switch (info.Operand)
         {
             case IlOperandKind.InlineField:
-                return formatter.FieldTypeName(reader, Token(il, operandStart));
+                return formatter.FieldToken(reader, Token(il, operandStart))?.TypeName;
 
             case IlOperandKind.InlineType:
                 return formatter.TypeName(reader, Token(il, operandStart));

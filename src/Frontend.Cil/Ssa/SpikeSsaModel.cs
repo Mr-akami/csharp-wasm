@@ -57,11 +57,25 @@ public sealed record SpikeSsaValue(int Id, SpikeSsaType Type);
 /// array.length / new.array / new.object / call</c>. Nothing that only moves a value between
 /// the evaluation stack and a local appears here; that is what normalising the stack means.
 /// </remarks>
+/// <param name="Member">
+/// The member the operation names, read as data rather than as the display text
+/// <paramref name="Detail"/> carries: the field of a <c>field.get</c> or <c>field.set</c>, the
+/// callee of a <c>call</c> or <c>new.object</c>. Null when the operation names no member, and
+/// null for a hand-built instruction whose token carried none.
+/// </param>
 public sealed record SpikeSsaInstruction(
     SpikeSsaValue? Result,
     string Op,
     IReadOnlyList<SpikeSsaValue> Operands,
-    string? Detail = null);
+    string? Detail = null,
+    SpikeSsaMemberReference? Member = null);
+
+/// <summary>
+/// A member an instruction names, as the owner's fully qualified name and the member's own
+/// name. This is .NET identity, not display text: a consumer reads it instead of recovering a
+/// name from <see cref="SpikeSsaInstruction.Detail"/>.
+/// </summary>
+public sealed record SpikeSsaMemberReference(string OwnerTypeName, string MemberName);
 
 public enum SpikeSsaTerminatorKind
 {
@@ -108,9 +122,31 @@ public sealed record SpikeSsaBlock(
     SpikeSsaTerminator Terminator);
 
 /// <summary><paramref name="Blocks"/> is ordered by <see cref="SpikeSsaBlock.IlOffset"/>.</summary>
-public sealed record SpikeSsaMethod(string Name, IReadOnlyList<SpikeSsaBlock> Blocks);
+/// <remarks>
+/// The entry block - the first of <paramref name="Blocks"/> in IL offset order - defines one
+/// <c>arg</c> instruction per argument slot, in slot order and before anything else, so a
+/// consumer reads the parameter list off those instructions rather than out of their
+/// <see cref="SpikeSsaInstruction.Detail"/>. Slot 0 of an instance method is the instance
+/// itself, which <paramref name="IsStatic"/> distinguishes.
+/// </remarks>
+/// <param name="ReturnType">Null for a method declared to return nothing.</param>
+public sealed record SpikeSsaMethod(
+    string Name,
+    bool IsStatic,
+    SpikeSsaType? ReturnType,
+    IReadOnlyList<SpikeSsaBlock> Blocks);
 
-public sealed record SpikeSsaTypeDefinition(string FullName, IReadOnlyList<SpikeSsaMethod> Methods);
+/// <summary>
+/// One instance field. <paramref name="Type"/> is null for a field whose declared type is
+/// outside the minimal type family; the field is still listed, because leaving it out would
+/// describe a type that is not the one in the file.
+/// </summary>
+public sealed record SpikeSsaField(string Name, SpikeSsaType? Type);
+
+public sealed record SpikeSsaTypeDefinition(
+    string FullName,
+    IReadOnlyList<SpikeSsaField> Fields,
+    IReadOnlyList<SpikeSsaMethod> Methods);
 
 /// <summary>
 /// One assembly normalised out of its evaluation stack, in metadata table order. A method that

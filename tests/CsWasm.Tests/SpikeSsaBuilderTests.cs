@@ -521,7 +521,7 @@ public sealed class SpikeSsaBuilderTests
                     0x07,
                     "newobj",
                     "instance void HandBuilt.Point::.ctor()",
-                    CallOperand: new IlCallOperand("HandBuilt.Point::.ctor", 0, HasThis: true, ReturnsVoid: true),
+                    CallOperand: new IlCallOperand("HandBuilt.Point", ".ctor", 0, HasThis: true, ReturnsVoid: true),
                     TypeOperand: "HandBuilt.Point"),
                 new IlInstruction(0x0c, "stloc.1", null, IntOperand: 1),
                 new IlInstruction(0x0d, "ldloc.1", null, IntOperand: 1),
@@ -584,7 +584,8 @@ public sealed class SpikeSsaBuilderTests
                     "call",
                     "int32 HandBuilt.Shapes::Identity(int32)",
                     CallOperand: new IlCallOperand(
-                        "HandBuilt.Shapes::Identity",
+                        "HandBuilt.Shapes",
+                        "Identity",
                         1,
                         HasThis: false,
                         ReturnsVoid: false),

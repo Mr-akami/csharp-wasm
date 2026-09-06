@@ -383,7 +383,7 @@ internal sealed class SpikeSsaMethodBuilder
                 {
                     var operands = Pop(stack, step.PopCount);
                     var result = step.ResultType is null ? null : NewValue(step.ResultType);
-                    instructions.Add(new SpikeSsaInstruction(result, step.Op, operands, step.Detail));
+                    instructions.Add(new SpikeSsaInstruction(result, step.Op, operands, step.Detail, step.Member));
 
                     if (result is not null)
                     {
@@ -517,6 +517,8 @@ internal sealed class SpikeSsaMethodBuilder
 
         return new SpikeSsaMethod(
             method.Name,
+            method.IsStatic,
+            signature.ReturnType,
             [.. ordered.Select(block => new SpikeSsaBlock(
                 block.IlOffset,
                 RemapAll(block.Parameters),
@@ -524,7 +526,8 @@ internal sealed class SpikeSsaMethodBuilder
                     instruction.Result is null ? null : Remap(instruction.Result),
                     instruction.Op,
                     RemapAll(instruction.Operands),
-                    instruction.Detail))],
+                    instruction.Detail,
+                    instruction.Member))],
                 new SpikeSsaTerminator(
                     block.Terminator.Kind,
                     block.Terminator.Condition,
