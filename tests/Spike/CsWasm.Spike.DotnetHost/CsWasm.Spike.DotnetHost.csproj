@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>CsWasm.Spike.DotnetHost</RootNamespace>
+    <AssemblyName>CsWasm.Spike.DotnetHost</AssemblyName>
+    <IsPackable>false</IsPackable>
+
+    <!-- The case's method is looked up by name, which is reflection. The AOT analyzer targets
+         the compiler, not the harness that runs its test inputs. -->
+    <IsAotCompatible>false</IsAotCompatible>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../CsWasm.Spike.Observations/CsWasm.Spike.Observations.csproj" />
+    <ProjectReference Include="../CsWasm.Spike.Samples/CsWasm.Spike.Samples.csproj" />
+  </ItemGroup>
+
+</Project>

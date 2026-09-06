@@ -66,6 +66,7 @@ src/Driver             CLI, orchestration
 src/Common             diagnostics, the embedded toolchain pin
 src/Backend.MoonBit    MoonBit toolchain integration; all MoonBit-specific code lives here
 tests/CsWasm.Tests     unit tests
+tests/Spike            .NET vs wasm differential run on the pinned Node host
 tools/                 toolchain pin, smoke and re-pin scripts
 nix/                   the pinned MoonBit derivation
 ```

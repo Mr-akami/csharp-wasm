@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>CsWasm.Spike.Differential</RootNamespace>
+    <AssemblyName>CsWasm.Spike.Differential</AssemblyName>
+    <!-- xunit's generated entry point trips the AOT analyzer; the compiler under test
+         is what has to stay AOT-clean, not the test host. -->
+    <IsAotCompatible>false</IsAotCompatible>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../src/Common/CsWasm.Common.csproj" />
+    <ProjectReference Include="../../../src/Driver/CsWasm.Driver.csproj" />
+    <ProjectReference Include="../CsWasm.Spike.Observations/CsWasm.Spike.Observations.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The sample is input data for the compiler, not code the runner calls: the wasm side
+         has to reach it the way a user would, by compiling the DLL. -->
+    <ProjectReference Include="../CsWasm.Spike.Samples/CsWasm.Spike.Samples.csproj"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Content"
+                      CopyToOutputDirectory="PreserveNewest" />
+
+    <!-- The .NET side is a child process, so it is built but not referenced. Its whole output
+         directory is copied by CopySpikeDotnetHost below: running it needs its runtimeconfig
+         and dependencies, not just the assembly. -->
+    <ProjectReference Include="../CsWasm.Spike.DotnetHost/CsWasm.Spike.DotnetHost.csproj"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="host/run-case.mjs" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- The glob is inside the target so that it is expanded after the ProjectReference above
+       has built the host, rather than at evaluation time when a clean tree has nothing yet. -->
+  <Target Name="CopySpikeDotnetHost" AfterTargets="Build">
+    <ItemGroup>
+      <SpikeDotnetHostOutput Include="$(MSBuildThisFileDirectory)../CsWasm.Spike.DotnetHost/bin/$(Configuration)/$(TargetFramework)/**/*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SpikeDotnetHostOutput)"
+          DestinationFolder="$(OutDir)dotnet-host/%(RecursiveDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>
