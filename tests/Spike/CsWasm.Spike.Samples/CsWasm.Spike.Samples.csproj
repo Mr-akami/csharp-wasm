@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CsWasm.Spike.Samples</RootNamespace>
+    <AssemblyName>CsWasm.Spike.Samples</AssemblyName>
+    <IsPackable>false</IsPackable>
+
+    <!-- The CIL frontend checks every method of the assembly it is given
+         (src/Frontend.Cil/SupportedInstructions.cs), so this assembly holds the differential
+         case and nothing else, and its IL must stay inside the supported opcode set:
+         Optimize=false inserts nop, which is not in that set. -->
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+
+    <!-- Nullable annotations make Roslyn synthesise NullableAttribute and
+         EmbeddedAttribute, whose constructors use opcodes outside the supported set. -->
+    <Nullable>disable</Nullable>
+
+    <!-- Assembly-level attributes add metadata that differs between local and CI builds. -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+    <!-- The AOT analyzer targets the compiler, not its test inputs. -->
+    <IsAotCompatible>false</IsAotCompatible>
+  </PropertyGroup>
+
+</Project>

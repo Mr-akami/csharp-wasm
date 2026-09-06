@@ -42,8 +42,10 @@ jobs:
         env:
           ContinuousIntegrationBuild: "true"
 
+      # The differential run has a step of its own below, so that a disagreement between C#
+      # and wasm is attributed to it rather than to the unit tests.
       - name: Test
-        run: nix develop --command dotnet test --configuration Release --no-build --logger "console;verbosity=normal"
+        run: nix develop --command dotnet test --configuration Release --no-build --logger "console;verbosity=normal" --filter "FullyQualifiedName!~CsWasm.Spike"
 
       - name: cswasm --version
         run: nix develop --command dotnet run --project src/Driver --configuration Release --no-build -- --version
@@ -55,3 +57,8 @@ jobs:
       # which is the whole reason the backend exists.
       - name: MoonBit wasm-gc smoke
         run: nix develop --command tools/moonbit-smoke.sh
+
+      # The completion condition of issue #18: the same C# run by .NET and by the pinned Node
+      # on the module cswasm produced, compared field by field. A disagreement fails CI here.
+      - name: .NET vs wasm differential (Node host)
+        run: nix develop --command dotnet test tests/Spike/CsWasm.Spike.Differential --configuration Release --no-build --logger "console;verbosity=normal"
